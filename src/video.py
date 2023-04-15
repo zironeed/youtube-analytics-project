@@ -1,5 +1,7 @@
 import os
 from googleapiclient.discovery import build
+from src.utils import get_statistic
+from googleapiclient.errors import HttpError
 
 
 class Video:
@@ -9,17 +11,19 @@ class Video:
 
     def __init__(self, id: str) -> None:
         """Инициализация ID видео, остальные данные берем через API"""
-        self.id = id
-        self.video = self.__youtube.videos().list(id=id, part='snippet,statistics').execute()
-
-        self.__title = self.video['items'][0]['snippet']['title']
-        self.__url = f"https://www.youtube.com/watch?v={id}"
-        self.__view_count = self.video['items'][0]['statistics']['viewCount']
-        self.__like_count = self.video['items'][0]['statistics']['likeCount']
+        self.id, self.__title, self.__url, self.__view_count, self.__like_count = get_statistic(id)
 
     def __str__(self) -> str:
         """Вывод названия видео"""
         return f"{self.__title}"
+
+    @property
+    def title(self):
+        return self.__title
+
+    @property
+    def like_count(self):
+        return self.__like_count
 
 
 class PLVideo(Video):
@@ -29,7 +33,7 @@ class PLVideo(Video):
     __youtube = build('youtube', 'v3', developerKey=__api_key)
 
     def __init__(self, video_id: str, playlist_id: str) -> None:
-        """Инициализация ID плейлиста, в плейлисте производим поиск нужного видео, далее инициализируем сам видосик"""
+        """Инициализация ID плейлиста, в плейлисте выполняем поиск нужного видео, далее инициализируем сам видосик"""
         self.__playlist_id = playlist_id
         self.__playlist = self.__youtube.playlistItems().list(playlistId=playlist_id,
                                                               part='contentDetails',
