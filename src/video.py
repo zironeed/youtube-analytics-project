@@ -11,7 +11,10 @@ class Video:
 
     def __init__(self, id: str) -> None:
         """Инициализация ID видео, остальные данные берем через API"""
-        self.id, self.__title, self.__url, self.__view_count, self.__like_count = get_statistic(id)
+        try:
+            self.id, self.__title, self.__url, self.__view_count, self.__like_count = get_statistic(id)
+        except HttpError:
+            print("Видео не найдено")
 
     def __str__(self) -> str:
         """Вывод названия видео"""
